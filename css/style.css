@@ -1,0 +1,17 @@
+.status-cell {
+    padding: 5px 5px;
+    border-radius: 10px;
+    display: inline-block;
+    min-width: 75px;
+    height: 40px;
+    text-align: center;
+    color: white;
+}
+
+.status-disponivel {
+    background-color: #06A11F;
+}
+
+.status-emprestado {
+    background-color: #FE1515;
+}
