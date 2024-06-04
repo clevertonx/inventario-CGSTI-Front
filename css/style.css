@@ -15,3 +15,18 @@
 .status-emprestado {
     background-color: #FE1515;
 }
+
+.action-button {
+    margin-right: 5px; 
+}
+
+table {
+    border-radius: 20px; 
+    overflow: hidden;
+}
+
+th,
+td {
+    padding: 10px; 
+    border: 1px solid #ccc; 
+}
