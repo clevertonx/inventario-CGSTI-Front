@@ -2,8 +2,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const equipamentoForm = document.getElementById("equipamentoForm");
     const reservaForm = document.getElementById("reservaForm");
 
-    let deleteType = '';  
-    let deleteId = null;  
+    let deleteType = '';
+    let deleteId = null;
 
     function fetchEquipamentos() {
         axios.get('http://localhost:8080/equipamentos')
@@ -14,19 +14,32 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 equipamentos.forEach(equipamento => {
                     const statusClass = equipamento.statusEquipamento === "DISPONIVEL" ? "bg-success text-white" : "bg-danger text-white";
-                    const row = `
-                    <tr>
-                        <td>${equipamento.nome}</td>
-                        <td>${equipamento.tipo}</td>
-                        <td class="mt-1 status-cell ${statusClass}">${equipamento.statusEquipamento.toLowerCase()}</td>
-                        <td>
-                        <div class="btn-group">
-                            <button class="btn btn-primary btn-sm action-button" onclick="editEquipamento(${equipamento.id})"><i class="fa-solid fa-pencil fa-xs"></i></button>
-                            <button class="btn btn-danger btn-sm" onclick="confirmDelete('equipamento', ${equipamento.id})"><i class="fa-solid fa-trash-can"></i></button>
-                            </div>
-                        </td>
-                    </tr>
+                    const tooltipContent = `
+                    Número de Série: ${equipamento.numeroSerie}
+                    Marca: ${equipamento.marca}
+                    Modelo: ${equipamento.modelo}
+                    HD/SSD: ${equipamento.hdSsd}
+                    Processador: ${equipamento.processador}
+                    Placa de Vídeo: ${equipamento.placaDeVideo}
+                    Memória RAM: ${equipamento.memoriaRam}
+                    Sistema Operacional: ${equipamento.sistemaOperacional}
+                    Arquitetura: ${equipamento.arquitetura}
+                    Endereço MAC: ${equipamento.enderecoMac}
+                    Etiqueta: ${equipamento.etiqueta}
                 `;
+                    const row = `
+                <tr>
+                <td data-bs-toggle="tooltip" data-bs-placement="top" title="${tooltipContent}" class="custom-tooltip" style="cursor: pointer;">${equipamento.nome}</td>
+                <td>${equipamento.tipo}</td>
+                    <td class="mt-1 status-cell ${statusClass}">${equipamento.statusEquipamento.toLowerCase()}</td>
+                    <td>
+                        <div class="btn-group">
+                            <button class="btn btn-secondary btn-sm action-button" onclick="editEquipamento(${equipamento.id})"><i class="fa-solid fa-pencil fa-xs"></i></button>
+                            <button class="btn btn-secondary btn-sm" onclick="confirmDelete('equipamento', ${equipamento.id})"><i class="fa-solid fa-trash-can"></i></button>
+                        </div>
+                    </td>
+                </tr>
+            `;
                     equipamentoTableBody.innerHTML += row;
                 });
 
@@ -34,6 +47,10 @@ document.addEventListener("DOMContentLoaded", function () {
             })
             .catch(error => console.error('Erro ao buscar equipamentos:', error.response));
     }
+
+    $(function () {
+        $('[data-bs-toggle="tooltip"]').tooltip();
+    });
 
     function fetchReservas() {
         axios.get('http://localhost:8080/reservas')
@@ -57,20 +74,20 @@ document.addEventListener("DOMContentLoaded", function () {
         const toastContainer = document.getElementById("toastContainer");
         reservaTableBody.innerHTML = "";
         toastContainer.innerHTML = "";
-    
+
         const dataAtual = new Date();
-    
+
         reservas.forEach(reserva => {
             const equipamentosNomes = reserva.equipamentosIds.map(id => equipamentosMap.get(id)).join(", ");
             const dataSolicitacaoFormatada = new Date(reserva.dataSolicitacao).toLocaleDateString('pt-BR');
             const dataRetiradaFormatada = new Date(reserva.dataRetirada).toLocaleDateString('pt-BR');
             const dataEntregaFormatada = new Date(reserva.dataEntrega).toLocaleDateString('pt-BR');
             const dataEntrega = new Date(reserva.dataEntrega);
-    
+
             const isAtrasado = dataEntrega < dataAtual;
-            
+
             const linhaClasse = isAtrasado ? 'table-danger' : '';
-    
+
             const row = `
                 <tr class="${linhaClasse}">
                     <td>${reserva.responsavelSetor}</td>
@@ -83,15 +100,15 @@ document.addEventListener("DOMContentLoaded", function () {
                     <td>${equipamentosNomes}</td>
                     <td>
                         <div class="btn-group">
-                            <button class="btn btn-primary btn-sm action-button" onclick="editReserva(${reserva.id})"><i class="fa-solid fa-pencil fa-xs"></i></button>
-                            <button class="btn btn-danger btn-sm" onclick="confirmDelete('reserva', ${reserva.id})"><i class="fa-solid fa-trash-can"></i></button>
+                            <button class="btn btn-secondary btn-sm action-button" onclick="editReserva(${reserva.id})"><i class="fa-solid fa-pencil fa-xs"></i></button>
+                            <button class="btn btn-secondary btn-sm" onclick="confirmDelete('reserva', ${reserva.id})"><i class="fa-solid fa-trash-can"></i></button>
                         </div>
                     </td>
                 </tr>
             `;
-    
+
             reservaTableBody.innerHTML += row;
-    
+
             if (isAtrasado) {
                 const toast = document.createElement('div');
                 toast.className = 'toast';
@@ -114,7 +131,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     }
-    
+
 
     function updateEquipamentoOptions(equipamentos) {
         const equipamentosSelect = document.getElementById("equipamentos");
@@ -133,7 +150,26 @@ document.addEventListener("DOMContentLoaded", function () {
             nome: document.getElementById("equipamentoNome").value,
             tipo: document.getElementById("equipamentoTipo").value
         };
-    
+
+        // Verificando se o campo nome e tipo estão preenchidos
+        if (!equipamento.nome || !equipamento.tipo) {
+            console.error('Nome e Tipo são campos obrigatórios.');
+            return;
+        }
+
+        // Preenchendo os outros campos, mesmo que não sejam obrigatórios
+        equipamento.numeroSerie = document.getElementById("equipamentoNumeroSerie").value;
+        equipamento.marca = document.getElementById("equipamentoMarca").value;
+        equipamento.modelo = document.getElementById("equipamentoModelo").value;
+        equipamento.hdSsd = document.getElementById("equipamentoHdSsd").value;
+        equipamento.processador = document.getElementById("equipamentoProcessador").value;
+        equipamento.placaDeVideo = document.getElementById("equipamentoPlacaDeVideo").value;
+        equipamento.memoriaRam = document.getElementById("equipamentoMemoriaRam").value;
+        equipamento.sistemaOperacional = document.getElementById("equipamentoSistemaOperacional").value;
+        equipamento.arquitetura = document.getElementById("equipamentoArquitetura").value;
+        equipamento.enderecoMac = document.getElementById("equipamentoEnderecoMac").value;
+        equipamento.etiqueta = document.getElementById("equipamentoEtiqueta").value;
+
         if (isEditingEquipamento) {
             axios.put(`http://localhost:8080/equipamentos/${editingEquipamentoId}`, equipamento)
                 .then(response => {
@@ -152,7 +188,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 .catch(error => console.error('Erro ao adicionar equipamento:', error.response));
         }
     });
-    
+
 
     reservaForm.addEventListener("submit", function (event) {
         event.preventDefault();
@@ -166,7 +202,7 @@ document.addEventListener("DOMContentLoaded", function () {
             telefone: document.getElementById("telefone").value,
             equipamentosIds: Array.from(document.getElementById("equipamentos").selectedOptions).map(option => option.value)
         };
-    
+
         if (isEditingReserva) {
             axios.put(`http://localhost:8080/reservas/${editingReservaId}`, reserva)
                 .then(response => {
@@ -216,47 +252,47 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     let isEditingEquipamento = false;
-let isEditingReserva = false;
-let editingEquipamentoId = null;
-let editingReservaId = null;
+    let isEditingReserva = false;
+    let editingEquipamentoId = null;
+    let editingReservaId = null;
 
 
 
-// Adiciona as funções de edição para equipamentos e reservas
-window.editEquipamento = function(id) {
-    isEditingEquipamento = true;
-    editingEquipamentoId = id;
-    axios.get(`http://localhost:8080/equipamentos/${id}`)
-        .then(response => {
-            const equipamento = response.data;
-            document.getElementById("equipamentoNome").value = equipamento.nome;
-            document.getElementById("equipamentoTipo").value = equipamento.tipo;
-            $("#equipamentoModal").modal('show');
-        })
-        .catch(error => console.error('Erro ao buscar equipamento:', error.response));
-}
+    // Adiciona as funções de edição para equipamentos e reservas
+    window.editEquipamento = function (id) {
+        isEditingEquipamento = true;
+        editingEquipamentoId = id;
+        axios.get(`http://localhost:8080/equipamentos/${id}`)
+            .then(response => {
+                const equipamento = response.data;
+                document.getElementById("equipamentoNome").value = equipamento.nome;
+                document.getElementById("equipamentoTipo").value = equipamento.tipo;
+                $("#equipamentoModal").modal('show');
+            })
+            .catch(error => console.error('Erro ao buscar equipamento:', error.response));
+    }
 
-window.editReserva = function(id) {
-    isEditingReserva = true;
-    editingReservaId = id;
-    axios.get(`http://localhost:8080/reservas/${id}`)
-        .then(response => {
-            const reserva = response.data;
-            document.getElementById("responsavelSetor").value = reserva.responsavelSetor;
-            document.getElementById("dataSolicitacao").value = reserva.dataSolicitacao;
-            document.getElementById("dataRetirada").value = reserva.dataRetirada;
-            document.getElementById("dataEntrega").value = reserva.dataEntrega;
-            document.getElementById("periodo").value = reserva.periodo;
-            document.getElementById("localEvento").value = reserva.localEvento;
-            document.getElementById("telefone").value = reserva.telefone;
-            const equipamentosSelect = document.getElementById("equipamentos");
-            Array.from(equipamentosSelect.options).forEach(option => {
-                option.selected = reserva.equipamentosIds.includes(parseInt(option.value));
-            });
-            $("#reservaModal").modal('show');
-        })
-        .catch(error => console.error('Erro ao buscar reserva:', error.response));
-}
+    window.editReserva = function (id) {
+        isEditingReserva = true;
+        editingReservaId = id;
+        axios.get(`http://localhost:8080/reservas/${id}`)
+            .then(response => {
+                const reserva = response.data;
+                document.getElementById("responsavelSetor").value = reserva.responsavelSetor;
+                document.getElementById("dataSolicitacao").value = reserva.dataSolicitacao;
+                document.getElementById("dataRetirada").value = reserva.dataRetirada;
+                document.getElementById("dataEntrega").value = reserva.dataEntrega;
+                document.getElementById("periodo").value = reserva.periodo;
+                document.getElementById("localEvento").value = reserva.localEvento;
+                document.getElementById("telefone").value = reserva.telefone;
+                const equipamentosSelect = document.getElementById("equipamentos");
+                Array.from(equipamentosSelect.options).forEach(option => {
+                    option.selected = reserva.equipamentosIds.includes(parseInt(option.value));
+                });
+                $("#reservaModal").modal('show');
+            })
+            .catch(error => console.error('Erro ao buscar reserva:', error.response));
+    }
 
 
     fetchEquipamentos();
