@@ -34,8 +34,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     <td class="mt-1 status-cell ${statusClass}">${equipamento.statusEquipamento.toLowerCase()}</td>
                     <td>
                         <div class="btn-group">
-                            <button class="btn btn-secondary btn-sm action-button" onclick="editEquipamento(${equipamento.id})"><i class="fa-solid fa-pencil fa-xs"></i></button>
-                            <button class="btn btn-secondary btn-sm" onclick="confirmDelete('equipamento', ${equipamento.id})"><i class="fa-solid fa-trash-can"></i></button>
+                            <button class="btn btn-primary btn-sm action-button" onclick="editEquipamento(${equipamento.id})"><i class="fa-solid fa-pencil fa-xs"></i></button>
+                            <button class="btn btn-danger btn-sm" onclick="confirmDelete('equipamento', ${equipamento.id})"><i class="fa-solid fa-trash-can"></i></button>
                         </div>
                     </td>
                 </tr>
@@ -52,6 +52,7 @@ document.addEventListener("DOMContentLoaded", function () {
         $('[data-bs-toggle="tooltip"]').tooltip();
     });
 
+
     function fetchReservas() {
         axios.get('http://localhost:8080/reservas')
             .then(response => {
@@ -67,6 +68,46 @@ document.addEventListener("DOMContentLoaded", function () {
                     .catch(error => console.error('Erro ao buscar equipamentos:', error.response));
             })
             .catch(error => console.error('Erro ao buscar reservas:', error.response));
+    }
+
+    function fetchHistoricoReservas() {
+        axios.get('http://localhost:8080/reservaHistorico')
+            .then(response => {
+                const historicoReservas = response.data;
+                renderizarTabelaHistoricoReservas(historicoReservas);
+            })
+            .catch(error => console.error('Erro ao buscar histórico de reservas:', error.response));
+    }
+
+    function renderizarTabelaHistoricoReservas(historicoReservas) {
+        const historicoTableBody = document.getElementById("historicoTableBody");
+        historicoTableBody.innerHTML = "";
+    
+        historicoReservas.forEach(reserva => {
+            const dataSolicitacao = new Date(reserva.dataSolicitacao).toLocaleDateString('pt-BR');
+            const dataRetirada = new Date(reserva.dataRetirada).toLocaleDateString('pt-BR');
+            const dataEntrega = new Date(reserva.dataEntrega).toLocaleDateString('pt-BR');
+            const dataDevolucao = new Date(reserva.dataDevolucao).toLocaleDateString('pt-BR');
+    
+            const row = `
+                <tr>
+                    <td>${reserva.responsavelSetor}</td>
+                    <td>${dataSolicitacao}</td>
+                    <td>${reserva.periodo}</td>
+                    <td>${reserva.localEvento}</td>
+                    <td>${reserva.telefone}</td>
+                    <td>${dataRetirada}</td>
+                    <td>${dataEntrega}</td>
+                    <td>${dataDevolucao}</td>
+                    <td>
+                        <div class="btn-group">
+                            <button class="btn btn-danger btn-sm" onclick="confirmDelete('reservaHistorico', ${reserva.id})"><i class="fa-solid fa-trash-can"></i></button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+            historicoTableBody.innerHTML += row;
+        });
     }
 
     function renderizarTabelaReservas(reservas, equipamentosMap) {
@@ -100,8 +141,9 @@ document.addEventListener("DOMContentLoaded", function () {
                     <td>${equipamentosNomes}</td>
                     <td>
                         <div class="btn-group">
-                            <button class="btn btn-secondary btn-sm action-button" onclick="editReserva(${reserva.id})"><i class="fa-solid fa-pencil fa-xs"></i></button>
-                            <button class="btn btn-secondary btn-sm" onclick="confirmDelete('reserva', ${reserva.id})"><i class="fa-solid fa-trash-can"></i></button>
+                        <button class="btn btn-success btn-sm action-button" onclick="concluirReserva(${reserva.id})"><i class="fa-solid fa-check"></i></button>
+                            <button class="btn btn-primary btn-sm action-button" onclick="editReserva(${reserva.id})"><i class="fa-solid fa-pencil fa-xs"></i></button>
+                            <button class="btn btn-danger btn-sm" onclick="confirmDelete('reserva', ${reserva.id})"><i class="fa-solid fa-trash-can"></i></button>
                         </div>
                     </td>
                 </tr>
@@ -129,6 +171,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 const bsToast = new bootstrap.Toast(toast);
                 bsToast.show();
             }
+
+            
         });
     }
 
@@ -151,13 +195,11 @@ document.addEventListener("DOMContentLoaded", function () {
             tipo: document.getElementById("equipamentoTipo").value
         };
 
-        // Verificando se o campo nome e tipo estão preenchidos
         if (!equipamento.nome || !equipamento.tipo) {
             console.error('Nome e Tipo são campos obrigatórios.');
             return;
         }
 
-        // Preenchendo os outros campos, mesmo que não sejam obrigatórios
         equipamento.numeroSerie = document.getElementById("equipamentoNumeroSerie").value;
         equipamento.marca = document.getElementById("equipamentoMarca").value;
         equipamento.modelo = document.getElementById("equipamentoModelo").value;
@@ -246,6 +288,12 @@ document.addEventListener("DOMContentLoaded", function () {
                     fetchEquipamentos();
                 })
                 .catch(error => console.error('Erro ao excluir reserva:', error.response));
+        } else if (deleteType === 'reservaHistorico') {
+            axios.delete(`http://localhost:8080/reservaHistorico/${id}`)
+                .then(response => {
+                    fetchHistoricoReservas(); 
+                })
+                .catch(error => console.error('Erro ao excluir reserva do histórico:', error.response));
         }
         const confirmModal = bootstrap.Modal.getInstance(document.getElementById('confirmModal'));
         confirmModal.hide();
@@ -258,7 +306,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 
-    // Adiciona as funções de edição para equipamentos e reservas
     window.editEquipamento = function (id) {
         isEditingEquipamento = true;
         editingEquipamentoId = id;
@@ -294,9 +341,22 @@ document.addEventListener("DOMContentLoaded", function () {
             .catch(error => console.error('Erro ao buscar reserva:', error.response));
     }
 
+    
+
 
     fetchEquipamentos();
     fetchReservas();
+    fetchHistoricoReservas();
 });
 
 
+function concluirReserva(id) {
+    axios.put(`http://localhost:8080/reservas/concluir/${id}`)
+        .then(response => {
+            fetchEquipamentos();
+            fetchReservas();
+            fetchHistoricoReservas();
+            console.log('Reserva concluída com sucesso!');
+        })
+        .catch(error => console.error('Erro ao concluir reserva:', error.response));
+}
