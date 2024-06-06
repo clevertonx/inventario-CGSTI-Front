@@ -30,7 +30,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     const row = `
                 <tr>
                 <td data-bs-toggle="tooltip" data-bs-placement="top" title="${tooltipContent}" class="custom-tooltip" style="cursor: pointer;">${equipamento.nome}</td>
-                <td>${equipamento.tipo}</td>
+                <td>${equipamento.tipoEquipamento}</td>
                     <td class="mt-1 status-cell ${statusClass}">${equipamento.statusEquipamento.toLowerCase()}</td>
                     <td>
                         <div class="btn-group">
@@ -224,10 +224,10 @@ document.addEventListener("DOMContentLoaded", function () {
         event.preventDefault();
         const equipamento = {
             nome: document.getElementById("equipamentoNome").value,
-            tipo: document.getElementById("equipamentoTipo").value
+            tipoEquipamento: document.getElementById("equipamentoTipo").value
         };
 
-        if (!equipamento.nome || !equipamento.tipo) {
+        if (!equipamento.nome || !equipamento.tipoEquipamento) {
             console.error('Nome e Tipo são campos obrigatórios.');
             return;
         }
@@ -347,7 +347,7 @@ document.addEventListener("DOMContentLoaded", function () {
             .then(response => {
                 const equipamento = response.data;
                 document.getElementById("equipamentoNome").value = equipamento.nome;
-                document.getElementById("equipamentoTipo").value = equipamento.tipo;
+                document.getElementById("equipamentoTipo").value = equipamento.tipoEquipamento;
                 $("#equipamentoModal").modal('show');
             })
             .catch(error => console.error('Erro ao buscar equipamento:', error.response));
