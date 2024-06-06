@@ -303,6 +303,8 @@ document.addEventListener("DOMContentLoaded", function () {
     let isEditingReserva = false;
     let editingEquipamentoId = null;
     let editingReservaId = null;
+    let isConcludingReserva = false;
+    let concludingReservaId = null;
 
 
 
@@ -341,6 +343,18 @@ document.addEventListener("DOMContentLoaded", function () {
             .catch(error => console.error('Erro ao buscar reserva:', error.response));
     }
 
+    window.concluirReserva = function (id) {
+        isConcludingReserva = true;
+        concludingReservaId = id;
+        axios.put(`http://localhost:8080/reservas/concluir/${id}`)
+            .then(response => {
+                fetchEquipamentos();
+                fetchReservas();
+                fetchHistoricoReservas();
+                console.log('Reserva concluída com sucesso!');
+            })
+            .catch(error => console.error('Erro ao concluir reserva:', error.response));
+    }
     
 
 
@@ -350,13 +364,3 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 
-function concluirReserva(id) {
-    axios.put(`http://localhost:8080/reservas/concluir/${id}`)
-        .then(response => {
-            fetchEquipamentos();
-            fetchReservas();
-            fetchHistoricoReservas();
-            console.log('Reserva concluída com sucesso!');
-        })
-        .catch(error => console.error('Erro ao concluir reserva:', error.response));
-}
