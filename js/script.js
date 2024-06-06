@@ -70,45 +70,77 @@ document.addEventListener("DOMContentLoaded", function () {
             .catch(error => console.error('Erro ao buscar reservas:', error.response));
     }
 
-    function fetchHistoricoReservas() {
-        axios.get('http://localhost:8080/reservaHistorico')
+    const historicoTableBody = document.getElementById("historicoTableBody");
+    const historicoPagination = document.getElementById("historicoPagination");
+
+    function fetchHistoricoReservas(pageNumber, pageSize) {
+        axios.get(`http://localhost:8080/reservaHistorico/paginados?page=${pageNumber}&size=${pageSize}`)
             .then(response => {
                 const historicoReservas = response.data;
-                renderizarTabelaHistoricoReservas(historicoReservas);
+                renderizarTabelaHistoricoReservas(historicoReservas.content);
+                renderizarPaginacao(response.data.totalPages, pageNumber);
             })
             .catch(error => console.error('Erro ao buscar histórico de reservas:', error.response));
+    }
+
+    function renderizarPaginacao(totalPages, pageNumber) {
+        historicoPagination.innerHTML = '';
+
+        const pagination = document.createElement('ul');
+        pagination.classList.add('pagination');
+
+        for (let i = 0; i < totalPages; i++) {
+            const listItem = document.createElement('li');
+            listItem.classList.add('page-item');
+
+            const link = document.createElement('a');
+            link.classList.add('page-link');
+            link.textContent = i + 1;
+            link.href = '#';
+            if (i === pageNumber) {
+                listItem.classList.add('active');
+            }
+            link.addEventListener('click', () => fetchHistoricoReservas(i, 10));
+
+            listItem.appendChild(link);
+            pagination.appendChild(listItem);
+        }
+
+        historicoPagination.appendChild(pagination);
     }
 
     function renderizarTabelaHistoricoReservas(historicoReservas) {
         const historicoTableBody = document.getElementById("historicoTableBody");
         historicoTableBody.innerHTML = "";
-    
+
         historicoReservas.forEach(reserva => {
             const dataSolicitacao = new Date(reserva.dataSolicitacao).toLocaleDateString('pt-BR');
             const dataRetirada = new Date(reserva.dataRetirada).toLocaleDateString('pt-BR');
             const dataEntrega = new Date(reserva.dataEntrega).toLocaleDateString('pt-BR');
-            const dataDevolucao = new Date(reserva.dataDevolucao).toLocaleDateString('pt-BR');
-    
+            const dataDevolucao = reserva.dataDevolucao ? new Date(reserva.dataDevolucao).toLocaleDateString('pt-BR') : '';
+
             const row = `
-                <tr>
-                    <td>${reserva.responsavelSetor}</td>
-                    <td>${dataSolicitacao}</td>
-                    <td>${reserva.periodo}</td>
-                    <td>${reserva.localEvento}</td>
-                    <td>${reserva.telefone}</td>
-                    <td>${dataRetirada}</td>
-                    <td>${dataEntrega}</td>
-                    <td>${dataDevolucao}</td>
-                    <td>
-                        <div class="btn-group">
-                            <button class="btn btn-danger btn-sm" onclick="confirmDelete('reservaHistorico', ${reserva.id})"><i class="fa-solid fa-trash-can"></i></button>
-                        </div>
-                    </td>
-                </tr>
-            `;
+            <tr>
+                <td>${reserva.responsavelSetor}</td>
+                <td>${dataSolicitacao}</td>
+                <td>${reserva.periodo}</td>
+                <td>${reserva.localEvento}</td>
+                <td>${reserva.telefone}</td>
+                <td>${dataRetirada}</td>
+                <td>${dataEntrega}</td>
+                <td>${dataDevolucao}</td>
+                <td>
+                    <div class="btn-group">
+                        <button class="btn btn-danger btn-sm" onclick="confirmDelete('reservaHistorico', ${reserva.id})"><i class="fa-solid fa-trash-can"></i></button>
+                    </div>
+                </td>
+            </tr>
+        `;
             historicoTableBody.innerHTML += row;
         });
     }
+
+
 
     function renderizarTabelaReservas(reservas, equipamentosMap) {
         const reservaTableBody = document.getElementById("reservaTableBody");
@@ -172,7 +204,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 bsToast.show();
             }
 
-            
+
         });
     }
 
@@ -291,7 +323,7 @@ document.addEventListener("DOMContentLoaded", function () {
         } else if (deleteType === 'reservaHistorico') {
             axios.delete(`http://localhost:8080/reservaHistorico/${id}`)
                 .then(response => {
-                    fetchHistoricoReservas(); 
+                    fetchHistoricoReservas(0, 10);
                 })
                 .catch(error => console.error('Erro ao excluir reserva do histórico:', error.response));
         }
@@ -350,17 +382,16 @@ document.addEventListener("DOMContentLoaded", function () {
             .then(response => {
                 fetchEquipamentos();
                 fetchReservas();
-                fetchHistoricoReservas();
+                fetchHistoricoReservas(0, 10);
                 console.log('Reserva concluída com sucesso!');
             })
             .catch(error => console.error('Erro ao concluir reserva:', error.response));
     }
-    
+
 
 
     fetchEquipamentos();
     fetchReservas();
-    fetchHistoricoReservas();
+    fetchHistoricoReservas(0, 10);
 });
-
 
