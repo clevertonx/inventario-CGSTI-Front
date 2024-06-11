@@ -15,31 +15,31 @@ document.addEventListener("DOMContentLoaded", function () {
                 equipamentos.forEach(equipamento => {
                     const statusClass = equipamento.statusEquipamento === "DISPONIVEL" ? "bg-success text-white" : "bg-danger text-white";
                     const tooltipContent = `
-                    Número de Série: ${equipamento.numeroSerie}
-                    Marca: ${equipamento.marca}
-                    Modelo: ${equipamento.modelo}
-                    HD/SSD: ${equipamento.hdSsd}
-                    Processador: ${equipamento.processador}
-                    Placa de Vídeo: ${equipamento.placaDeVideo}
-                    Memória RAM: ${equipamento.memoriaRam}
-                    Sistema Operacional: ${equipamento.sistemaOperacional}
-                    Arquitetura: ${equipamento.arquitetura}
-                    Endereço MAC: ${equipamento.enderecoMac}
-                    Etiqueta: ${equipamento.etiqueta}
-                `;
+Número de Série: ${equipamento.numeroSerie}
+Marca: ${equipamento.marca}
+Modelo: ${equipamento.modelo}
+HD/SSD: ${equipamento.hdSsd}
+Processador: ${equipamento.processador}
+Placa de Vídeo: ${equipamento.placaDeVideo}
+Memória RAM: ${equipamento.memoriaRam}
+Sistema Operacional: ${equipamento.sistemaOperacional}
+Arquitetura: ${equipamento.arquitetura}
+Endereço MAC: ${equipamento.enderecoMac}
+Etiqueta: ${equipamento.etiqueta}
+`;
                     const row = `
-                <tr>
-                <td data-bs-toggle="tooltip" data-bs-placement="top" title="${tooltipContent}" class="custom-tooltip" style="cursor: pointer;">${equipamento.nome}</td>
-                <td>${equipamento.tipoEquipamento}</td>
-                    <td class="mt-1 status-cell ${statusClass}">${equipamento.statusEquipamento.toLowerCase()}</td>
-                    <td>
-                        <div class="btn-group">
-                            <button class="btn btn-primary btn-sm action-button" onclick="editEquipamento(${equipamento.id})"><i class="fa-solid fa-pencil fa-xs"></i></button>
-                            <button class="btn btn-danger btn-sm" onclick="confirmDelete('equipamento', ${equipamento.id})"><i class="fa-solid fa-trash-can"></i></button>
-                        </div>
-                    </td>
-                </tr>
-            `;
+<tr>
+    <td data-bs-toggle="tooltip" data-bs-placement="top" title="${tooltipContent}" class="custom-tooltip" style="cursor: pointer;">${equipamento.nome}</td>
+    <td>${equipamento.tipoEquipamento}</td>
+    <td class="mt-1 status-cell ${statusClass}">${equipamento.statusEquipamento.toLowerCase()}</td>
+    <td>
+        <div class="btn-group">
+            <button class="btn btn-primary btn-sm action-button" onclick="editEquipamento(${equipamento.id})"><i class="fa-solid fa-pencil fa-xs"></i></button>
+            <button class="btn btn-danger btn-sm" onclick="confirmDelete('equipamento', ${equipamento.id})"><i class="fa-solid fa-trash-can"></i></button>
+        </div>
+    </td>
+</tr>
+`;
                     equipamentoTableBody.innerHTML += row;
                 });
 
@@ -70,7 +70,6 @@ document.addEventListener("DOMContentLoaded", function () {
             .catch(error => console.error('Erro ao buscar reservas:', error.response));
     }
 
-    const historicoTableBody = document.getElementById("historicoTableBody");
     const historicoPagination = document.getElementById("historicoPagination");
 
     function fetchHistoricoReservas(pageNumber, pageSize) {
@@ -92,7 +91,6 @@ document.addEventListener("DOMContentLoaded", function () {
         for (let i = 0; i < totalPages; i++) {
             const listItem = document.createElement('li');
             listItem.classList.add('page-item');
-
             const link = document.createElement('a');
             link.classList.add('page-link');
             link.textContent = i + 1;
@@ -120,22 +118,22 @@ document.addEventListener("DOMContentLoaded", function () {
             const dataDevolucao = reserva.dataDevolucao ? new Date(reserva.dataDevolucao).toLocaleDateString('pt-BR') : '';
 
             const row = `
-            <tr>
-                <td>${reserva.responsavelSetor}</td>
-                <td>${dataSolicitacao}</td>
-                <td>${reserva.periodo}</td>
-                <td>${reserva.localEvento}</td>
-                <td>${reserva.telefone}</td>
-                <td>${dataRetirada}</td>
-                <td>${dataEntrega}</td>
-                <td>${dataDevolucao}</td>
-                <td>
-                    <div class="btn-group">
-                        <button class="btn btn-danger btn-sm" onclick="confirmDelete('reservaHistorico', ${reserva.id})"><i class="fa-solid fa-trash-can"></i></button>
-                    </div>
-                </td>
-            </tr>
-        `;
+    <tr>
+        <td>${reserva.responsavelSetor}</td>
+        <td>${dataSolicitacao}</td>
+        <td>${reserva.periodo}</td>
+        <td>${reserva.localEvento}</td>
+        <td>${reserva.telefone}</td>
+        <td>${dataRetirada}</td>
+        <td>${dataEntrega}</td>
+        <td>${dataDevolucao}</td>
+        <td>
+            <div class="btn-group">
+                <button class="btn btn-danger btn-sm" onclick="confirmDelete('reservaHistorico', ${reserva.id})"><i class="fa-solid fa-trash-can"></i></button>
+            </div>
+        </td>
+    </tr>
+    `;
             historicoTableBody.innerHTML += row;
         });
     }
@@ -158,28 +156,25 @@ document.addEventListener("DOMContentLoaded", function () {
             const dataEntrega = new Date(reserva.dataEntrega);
 
             const isAtrasado = dataEntrega < dataAtual;
-
             const linhaClasse = isAtrasado ? 'table-danger' : '';
-
-            const row = `
-                <tr class="${linhaClasse}">
-                    <td>${reserva.responsavelSetor}</td>
-                    <td>${dataSolicitacaoFormatada}</td>
-                    <td>${reserva.periodo}</td>
-                    <td>${reserva.localEvento}</td>
-                    <td>${reserva.telefone}</td>
-                    <td>${dataRetiradaFormatada}</td>
-                    <td>${dataEntregaFormatada}</td>
-                    <td>${equipamentosNomes}</td>
-                    <td>
-                        <div class="btn-group">
-                        <button class="btn btn-success btn-sm action-button" onclick="concluirReserva(${reserva.id})"><i class="fa-solid fa-check"></i></button>
-                            <button class="btn btn-primary btn-sm action-button" onclick="editReserva(${reserva.id})"><i class="fa-solid fa-pencil fa-xs"></i></button>
-                            <button class="btn btn-danger btn-sm" onclick="confirmDelete('reserva', ${reserva.id})"><i class="fa-solid fa-trash-can"></i></button>
-                        </div>
-                    </td>
-                </tr>
-            `;
+            const row = ` <tr class="${linhaClasse}">
+        <td>${reserva.responsavelSetor}</td>
+        <td>${dataSolicitacaoFormatada}</td>
+        <td>${reserva.periodo}</td>
+        <td>${reserva.localEvento}</td>
+        <td>${reserva.telefone}</td>
+        <td>${dataRetiradaFormatada}</td>
+        <td>${dataEntregaFormatada}</td>
+        <td>${equipamentosNomes}</td>
+        <td>
+            <div class="btn-group">
+                <button class="btn btn-success btn-sm action-button" onclick="concluirReserva(${reserva.id})"><i class="fa-solid fa-check"></i></button>
+                <button class="btn btn-primary btn-sm action-button" onclick="editReserva(${reserva.id})"><i class="fa-solid fa-pencil fa-xs"></i></button>
+                <button class="btn btn-danger btn-sm" onclick="confirmDelete('reserva', ${reserva.id})"><i class="fa-solid fa-trash-can"></i></button>
+            </div>
+        </td>
+        </tr>
+        `;
 
             reservaTableBody.innerHTML += row;
 
@@ -190,15 +185,15 @@ document.addEventListener("DOMContentLoaded", function () {
                 toast.ariaLive = 'assertive';
                 toast.ariaAtomic = 'true';
                 toast.innerHTML = `
-                    <div class="toast-header">
-                        <strong class="me-auto">Atraso na Entrega</strong>
-                        <small>agora</small>
-                        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-                    </div>
-                    <div class="toast-body">
-                        A reserva de ${reserva.responsavelSetor} está atrasada! Data de entrega: ${dataEntregaFormatada}.
-                    </div>
-                `;
+        <div class="toast-header">
+            <strong class="me-auto">Atraso na Entrega</strong>
+            <small>agora</small>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body">
+            A reserva de ${reserva.responsavelSetor} está atrasada! Data de entrega: ${dataEntregaFormatada}.
+        </div>
+        `;
                 toastContainer.appendChild(toast);
                 const bsToast = new bootstrap.Toast(toast);
                 bsToast.show();
@@ -224,7 +219,7 @@ document.addEventListener("DOMContentLoaded", function () {
         event.preventDefault();
         const equipamento = {
             nome: document.getElementById("equipamentoNome").value,
-            tipoEquipamento: document.getElementById("equipamentoTipo").value
+            tipo: document.getElementById("equipamentoTipo").value
         };
 
         if (!equipamento.nome || !equipamento.tipoEquipamento) {
@@ -388,10 +383,20 @@ document.addEventListener("DOMContentLoaded", function () {
             .catch(error => console.error('Erro ao concluir reserva:', error.response));
     }
 
+        const logoutButton = document.getElementById('logoutButton');
+    
+        if (logoutButton) {
+            logoutButton.addEventListener('click', function () {
+                localStorage.removeItem('token'); 
+                sessionStorage.removeItem('token'); 
+    
+                window.location.href = 'http://http://10.8.4.71:5500/index.html'; 
+            });
+        }
+
 
 
     fetchEquipamentos();
     fetchReservas();
     fetchHistoricoReservas(0, 10);
 });
-
